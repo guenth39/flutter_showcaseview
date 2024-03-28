@@ -342,14 +342,14 @@ class _ToolTipWidgetState extends State<ToolTipWidget>
     isArrowUp = contentOffsetMultiplier == 1.0;
 
     final contentY = isArrowUp
-        ? widget.position!.getBottom() + (contentOffsetMultiplier * 3)
-        : widget.position!.getTop() + (contentOffsetMultiplier * 3);
+        ? widget.position!.getBottom() + (contentOffsetMultiplier * 3) - 10
+        : widget.position!.getTop() + (contentOffsetMultiplier * 3) + 5;
 
     final num contentFractionalOffset =
         contentOffsetMultiplier.clamp(-1.0, 0.0);
 
     var paddingTop = isArrowUp ? 22.0 : 0.0;
-    var paddingBottom = isArrowUp ? 0.0 : 27.0;
+    var paddingBottom = isArrowUp ? 0.0 : 22.0;
 
     if (!widget.showArrow) {
       paddingTop = 10;
@@ -361,6 +361,23 @@ class _ToolTipWidgetState extends State<ToolTipWidget>
 
     if (!widget.disableScaleAnimation && widget.isTooltipDismissed) {
       _scaleAnimationController.reverse();
+    }
+
+    Offset animationBegin = const Offset(0, 0);
+    Offset animationEnd = const Offset(0, 0);
+
+    if (widget.showArrow && isArrowUp) {
+      animationBegin = const Offset(0, 0);
+      animationEnd = const Offset(0, .1);
+    } else if (widget.showArrow && !isArrowUp) {
+      animationBegin = const Offset(0, 0);
+      animationEnd = const Offset(0, -.1);
+    } else if (!widget.showArrow && isArrowUp) {
+      animationBegin = const Offset(0, .1);
+      animationEnd = const Offset(0, .2);
+    } else if (!widget.showArrow && !isArrowUp) {
+      animationBegin = const Offset(0, -.1);
+      animationEnd = const Offset(0, -.2);
     }
 
     if (widget.container == null) {
@@ -379,8 +396,8 @@ class _ToolTipWidgetState extends State<ToolTipWidget>
             translation: Offset(0.0, contentFractionalOffset as double),
             child: SlideTransition(
               position: Tween<Offset>(
-                begin: Offset(0.0, contentFractionalOffset / 10),
-                end: const Offset(0.0, 0.100),
+                begin: animationBegin,
+                end: animationEnd,
               ).animate(_movingAnimation),
               child: Material(
                 type: MaterialType.transparency,
@@ -492,15 +509,13 @@ class _ToolTipWidgetState extends State<ToolTipWidget>
       children: <Widget>[
         Positioned(
           left: _getSpace(),
-          top: contentY - 10,
+          top: contentY,
           child: FractionalTranslation(
             translation: Offset(0.0, contentFractionalOffset as double),
             child: SlideTransition(
               position: Tween<Offset>(
-                begin: Offset(0.0, contentFractionalOffset / 10),
-                end: !widget.showArrow && !isArrowUp
-                    ? const Offset(0.0, 0.0)
-                    : const Offset(0.0, 0.100),
+                begin: animationBegin,
+                end: animationEnd,
               ).animate(_movingAnimation),
               child: Material(
                 color: Colors.transparent,
